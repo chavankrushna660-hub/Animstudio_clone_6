@@ -3115,7 +3115,7 @@ export default function RightPanel({
 
   return (
     <div
-      className={`absolute right-0 h-full transition-all duration-200 shrink-0 z-30 ${
+      className={`absolute right-0 top-0 bottom-0 h-full transition-all duration-200 shrink-0 z-30 ${
         open ? 'w-80' : 'w-0'
       }`}
     >
@@ -3127,29 +3127,29 @@ export default function RightPanel({
         {open ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
       </button>
 
-      <div className={`w-full h-full bg-neutral-900/95 backdrop-blur-md border-l border-neutral-800 flex flex-col overflow-hidden ${
+      <div className={`w-full h-full bg-neutral-900/95 backdrop-blur-md border-l border-neutral-800 flex flex-col overflow-hidden box-border min-w-0 ${
         open ? 'w-80' : 'w-0 border-l-0'
       }`}>
         {open && (
-        <div className="flex-1 flex flex-col h-full overflow-hidden select-none font-semibold">
+        <div className="flex-1 flex flex-col h-full overflow-hidden select-none font-semibold w-full box-border min-w-0">
           {/* Header */}
-          <div className="h-14 border-b border-neutral-800 flex items-center justify-between px-4 shrink-0">
-            <span className="text-xs uppercase tracking-widest font-black text-neutral-400 flex items-center gap-1.5">
-              <Settings className="w-3.5 h-3.5 text-amber-500" />
+          <div className="h-14 border-b border-neutral-800 flex items-center justify-between px-3.5 shrink-0 w-full box-border min-w-0">
+            <span className="text-xs uppercase tracking-widest font-black text-neutral-400 flex items-center gap-1.5 truncate min-w-0">
+              <Settings className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               PROPERTIES PANEL
             </span>
             <button
               onClick={() => setOpen(false)}
-              className="p-1.5 rounded-lg border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-850 text-neutral-400 hover:text-rose-400 transition-all lg:hidden"
+              className="p-1.5 rounded-lg border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-850 text-neutral-400 hover:text-rose-400 transition-all lg:hidden shrink-0"
               title="Close Sidebar"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-5 scrollbar-thin">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 space-y-4 scrollbar-thin w-full box-border min-w-0 flex flex-col">
             {/* RIGHT PANEL SYSTEM NOTIFICATION & CONFIRMATION HUD */}
-            <div className="space-y-1.5 bg-neutral-950/90 p-3 rounded-2xl border border-neutral-800 shadow-xl min-w-0">
+            <div className="space-y-1.5 bg-neutral-950/90 p-3 rounded-2xl border border-neutral-800 shadow-xl min-w-0 w-full max-w-full box-border overflow-hidden">
               <div className="flex items-center justify-between border-b border-neutral-800 pb-1.5 min-w-0">
                 <span className="text-[11px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5 font-mono truncate">
                   <Activity className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
