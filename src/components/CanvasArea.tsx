@@ -2179,54 +2179,28 @@ export default function CanvasArea({
         });
       }
 
-      const boundsTarget = calculateBoundingBox(interpolatedPoints || []);
-      const boundsAnchor = calculateBoundingBox(anchorDrawing.points || []);
-      
-      const txAnchor = anchorDrawing.transform?.x ?? 0;
-      const tyAnchor = anchorDrawing.transform?.y ?? 0;
-      const txTarget = targetUpper ? (targetLower.transform.x + (targetUpper.transform.x - targetLower.transform.x) * t) : targetLower.transform.x;
-      const tyTarget = targetUpper ? (targetLower.transform.y + (targetUpper.transform.y - targetLower.transform.y) * t) : targetLower.transform.y;
-      
-      const canvasCXAnchor = (boundsAnchor.x + boundsAnchor.width / 2) + txAnchor;
-      const canvasCYAnchor = (boundsAnchor.y + boundsAnchor.height / 2) + tyAnchor;
-      const canvasCXTarget = (boundsTarget.x + boundsTarget.width / 2) + txTarget;
-      const canvasCYTarget = (boundsTarget.y + boundsTarget.height / 2) + tyTarget;
-      
-      const dx = canvasCXAnchor - canvasCXTarget;
-      const dy = canvasCYAnchor - canvasCYTarget;
+      const anchorRot = anchorDrawing?.transform?.rotation ?? 0;
+      const anchorSX = anchorDrawing?.transform?.scaleX || 1;
+      const anchorSY = anchorDrawing?.transform?.scaleY || 1;
 
       const alignedTransform = {
         ...targetDrawing.transform,
         x: obj.transform.x,
         y: obj.transform.y,
-        rotation: obj.transform.rotation + (targetLower.transform.rotation + (targetUpper ? (targetUpper.transform.rotation - targetLower.transform.rotation) * t : 0) - anchorDrawing.transform.rotation),
-        scaleX: obj.transform.scaleX * ((targetLower.transform.scaleX + (targetUpper ? (targetUpper.transform.scaleX - targetLower.transform.scaleX) * t : 0)) / anchorDrawing.transform.scaleX),
-        scaleY: obj.transform.scaleY * ((targetLower.transform.scaleY + (targetUpper ? (targetUpper.transform.scaleY - targetLower.transform.scaleY) * t : 0)) / anchorDrawing.transform.scaleY),
+        rotation: obj.transform.rotation + (targetLower.transform.rotation + (targetUpper ? (targetUpper.transform.rotation - targetLower.transform.rotation) * t : 0) - anchorRot),
+        scaleX: obj.transform.scaleX * ((targetLower.transform.scaleX + (targetUpper ? (targetUpper.transform.scaleX - targetLower.transform.scaleX) * t : 0)) / anchorSX),
+        scaleY: obj.transform.scaleY * ((targetLower.transform.scaleY + (targetUpper ? (targetUpper.transform.scaleY - targetLower.transform.scaleY) * t : 0)) / anchorSY),
       };
-
-      const alignedPoints = interpolatedPoints?.map(p => ({
-        ...p,
-        x: p.x + dx,
-        y: p.y + dy
-      }));
-
-      const alignedSubPaths = interpolatedSubPaths?.map(sub => 
-        sub.map(p => ({
-          ...p,
-          x: p.x + dx,
-          y: p.y + dy
-        }))
-      );
 
       return {
         ...targetDrawing,
         transform: alignedTransform,
-        points: alignedPoints || targetDrawing.points,
-        subPaths: alignedSubPaths || targetDrawing.subPaths,
+        points: interpolatedPoints || targetDrawing.points,
+        subPaths: interpolatedSubPaths || targetDrawing.subPaths,
         id: obj.id,
         activeViewId: targetDrawing.id,
         name: obj.name,
-        pivots: anchorDrawing.pivots && anchorDrawing.pivots.length > 0 ? anchorDrawing.pivots : obj.pivots,
+        pivots: anchorDrawing?.pivots && anchorDrawing.pivots.length > 0 ? anchorDrawing.pivots : obj.pivots,
       };
     } catch (err) {
       console.error("Error resolving 360 view angle object:", err);
@@ -7206,7 +7180,7 @@ export default function CanvasArea({
     if (effectiveSelectedObjectId && objects[effectiveSelectedObjectId] && activeTool !== 'ZOM') {
       const rawObj = objects[effectiveSelectedObjectId];
       const obj = resolve360Object(rawObj, objects);
-      const box = calculateBoundingBox(getAllObjectPoints(rawObj));
+      const box = calculateBoundingBox(getAllObjectPoints(obj));
       const pivot = obj.pivots[0] || { localX: 0, localY: 0 };
       
       const tl = localToWorld({ x: box.x, y: box.y }, obj.transform, pivot);
