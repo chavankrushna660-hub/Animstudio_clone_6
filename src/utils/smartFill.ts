@@ -86,7 +86,7 @@ export function performSmartFloodFill(
 ): VectorObject | null {
   try {
     const layerObjects = Object.values(objects).filter(
-      obj => (!obj.layerId || obj.layerId === activeLayerId) && !obj.isHidden
+      obj => ((obj.layerId || 'layer_1') === activeLayerId) && !obj.isHidden
     );
 
     if (layerObjects.length === 0) return null;

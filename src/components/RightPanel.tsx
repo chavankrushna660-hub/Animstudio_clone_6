@@ -621,6 +621,8 @@ export default function RightPanel({
           }
         }
         if (obj.isHidden || obj.isLocked) return;
+        const effLayerId = obj.layerId || 'layer_1';
+        if (effLayerId !== activeLayerId) return;
 
         const localPivot = obj.pivots?.[0] || { localX: 0, localY: 0 };
         const insideIndices: number[] = [];
@@ -990,7 +992,8 @@ export default function RightPanel({
           }
         }
         if (obj.isHidden || obj.isLocked) return;
-        if (obj.layerId && activeLayerId && obj.layerId !== activeLayerId) return;
+        const effLayerId = obj.layerId || 'layer_1';
+        if (effLayerId !== activeLayerId) return;
 
         const localPivot = obj.pivots?.[0] || { localX: 0, localY: 0 };
         const worldPts = (obj.points && obj.points.length > 0)
@@ -3356,7 +3359,7 @@ export default function RightPanel({
                     type="button"
                     onClick={() => {
                       const layerStrokes = Object.values(objects).filter(
-                        obj => (!obj.layerId || obj.layerId === activeLayerId) && (obj.type === 'stroke' || obj.type === 'shape')
+                        obj => ((obj.layerId || 'layer_1') === activeLayerId) && (obj.type === 'stroke' || obj.type === 'shape')
                       );
                       if (layerStrokes.length <= 1) {
                         alert("Need at least 2 stroke objects on active layer to merge.");

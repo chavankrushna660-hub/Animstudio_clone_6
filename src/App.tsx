@@ -543,6 +543,21 @@ export default function App() {
   const [hideLassoSelection, setHideLassoSelection] = useState<boolean>(false);
   const [hideFslSelection, setHideFslSelection] = useState<boolean>(false);
 
+  // Reset continuous drawing and active selections whenever active layer changes
+  useEffect(() => {
+    setActiveContinuousDrawingId(null);
+    setLassoPoints([]);
+    setFslPoints([]);
+    setPenLassoPoints([]);
+    if (selectedObjectId && objects[selectedObjectId]) {
+      const selObj = objects[selectedObjectId];
+      const effLayerId = selObj.layerId || (layers && layers[0] ? layers[0].id : 'layer_1');
+      if (effLayerId !== activeLayerId) {
+        setSelectedObjectId(null);
+      }
+    }
+  }, [activeLayerId]);
+
   // Brush Custom Settings for lifelike drawing
   const [brushSettings, setBrushSettings] = useState<BrushSettings>({
     brushType: 'solid',
@@ -2690,10 +2705,13 @@ export default function App() {
   const handleTopBarMakeSingle = () => {
     let targetObjectIds: string[] = [];
 
-    // 1. Find objects inside lassoPoints
+    // 1. Find objects inside lassoPoints strictly belonging to activeLayerId
     if (lassoPoints && lassoPoints.length >= 3) {
       (Object.values(objects) as VectorObject[]).forEach(obj => {
         if (obj.isLocked || obj.isHidden) return;
+        const effLayerId = obj.layerId || (layers && layers[0] ? layers[0].id : 'layer_1');
+        if (effLayerId !== activeLayerId) return;
+
         const localPivot = obj.pivots?.[0] || { localX: 0, localY: 0 };
         const ptsToCheck = (obj.subPaths && obj.subPaths.length > 0)
           ? obj.subPaths.flat()
@@ -2711,13 +2729,23 @@ export default function App() {
     }
 
     if (selectedObjectId && !targetObjectIds.includes(selectedObjectId)) {
-      targetObjectIds.push(selectedObjectId);
+      const selObj = objects[selectedObjectId];
+      if (selObj) {
+        const effLayerId = selObj.layerId || (layers && layers[0] ? layers[0].id : 'layer_1');
+        if (effLayerId === activeLayerId) {
+          targetObjectIds.push(selectedObjectId);
+        }
+      }
     }
 
-    // Fallback: if lasso was drawn over canvas and no target found, collect all unlocked drawing objects
+    // Fallback: if lasso was drawn over canvas and no target found, collect all unlocked drawing objects ON ACTIVE LAYER ONLY!
     if (targetObjectIds.length < 2 && lassoPoints && lassoPoints.length >= 3) {
       (Object.values(objects) as VectorObject[]).forEach(obj => {
-        if (!obj.isLocked && !obj.isHidden && !targetObjectIds.includes(obj.id) && (obj.type === 'stroke' || obj.type === 'shape' || obj.type === '3d' || !obj.type)) {
+        if (obj.isLocked || obj.isHidden) return;
+        const effLayerId = obj.layerId || (layers && layers[0] ? layers[0].id : 'layer_1');
+        if (effLayerId !== activeLayerId) return;
+
+        if (!targetObjectIds.includes(obj.id) && (obj.type === 'stroke' || obj.type === 'shape' || obj.type === '3d' || !obj.type)) {
           targetObjectIds.push(obj.id);
         }
       });
@@ -2909,7 +2937,8 @@ export default function App() {
     setObjects(prev => {
       const updated = { ...prev };
       Object.keys(updated).forEach(id => {
-        if (!updated[id].layerId || updated[id].layerId === activeLayerId) {
+        const effLayerId = updated[id].layerId || (layers && layers[0] ? layers[0].id : 'layer_1');
+        if (effLayerId === activeLayerId) {
           delete updated[id];
         }
       });
