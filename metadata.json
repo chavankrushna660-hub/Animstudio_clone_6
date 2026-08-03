@@ -1,0 +1,6 @@
+{
+  "name": "AnimStudio Vector Animation",
+  "description": "2D & 3D vector animation app with depth layers, custom brushes, 3D character controls, curve path blending, and custom in-app controls.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
