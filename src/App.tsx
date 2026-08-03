@@ -1401,7 +1401,9 @@ export default function App() {
             'tintColor', 'tintIntensity', 'rimLightColor', 'rimLightIntensity', 'blur', 'blendMode',
             'wireframeMode', 'lightingMode', 'transform3D', 'depth3D', 'extrusionColor', 'subExtrusions',
             'bones3D', 'smartMeshColor', 'pivots', 'pins', 'deform', 'keepOnlyLassoRegions', 'lassoFills',
-            'subPathFills', 'subPathStrokes', 'mouthCavityColor', 'customColor', 'lassoDeformState', 'meshState'
+            'subPathFills', 'subPathStrokes', 'mouthCavityColor', 'customColor', 'lassoDeformState', 'meshState',
+            'hiddenLassoRegions', 'pngPatchedCanvas', 'pngPatchedDataUrl', 'parts', 'extractedParts',
+            'smartWarp', 'cageState', 'vertices3D', 'subPaths3D', 'faces3D', 'splineActive', 'customVectorDeformState'
           ];
           const drawingUpdates: Partial<VectorObject> = {};
           drawingKeys.forEach(k => {

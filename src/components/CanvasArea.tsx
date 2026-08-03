@@ -1691,7 +1691,7 @@ export default function CanvasArea({
     try {
       const targetInfo = getActiveTargetObjectInfo(selectedObjectId);
       if (!targetInfo) return;
-      const { activeObj: sourceObj, targetId } = targetInfo;
+      const { rawObj, activeObj: sourceObj, targetId } = targetInfo;
       const activeLasso = lassoPoints && lassoPoints.length >= 3 ? lassoPoints : penLassoPoints;
       if (!activeLasso || activeLasso.length < 3) return;
 
@@ -1704,6 +1704,21 @@ export default function CanvasArea({
       });
 
       if (!result) return;
+
+      if (rawObj.type === '360_container') {
+        result.extractedPartObject = {
+          ...result.extractedPartObject,
+          associatedViewId: sourceObj.id,
+          container360Id: rawObj.id
+        } as any;
+        if (result.mouthCavityObject) {
+          result.mouthCavityObject = {
+            ...result.mouthCavityObject,
+            associatedViewId: sourceObj.id,
+            container360Id: rawObj.id
+          } as any;
+        }
+      }
 
       setObjects(prev => {
         const updated = { ...prev };
@@ -1728,7 +1743,7 @@ export default function CanvasArea({
     try {
       const targetInfo = getActiveTargetObjectInfo(selectedObjectId);
       if (!targetInfo) return;
-      const { activeObj: sourceObj, targetId } = targetInfo;
+      const { rawObj, activeObj: sourceObj, targetId } = targetInfo;
       const activeLasso = lassoPoints && lassoPoints.length >= 3 ? lassoPoints : penLassoPoints;
       if (!activeLasso || activeLasso.length < 3) return;
 
@@ -1740,6 +1755,15 @@ export default function CanvasArea({
       });
 
       if (Object.keys(updatedObjects).length === 0) return;
+
+      if (rawObj.type === '360_container') {
+        Object.keys(updatedObjects).forEach(k => {
+          if (k !== sourceObj.id) {
+            (updatedObjects[k] as any).associatedViewId = sourceObj.id;
+            (updatedObjects[k] as any).container360Id = rawObj.id;
+          }
+        });
+      }
 
       setObjects(prev => ({
         ...prev,
@@ -1761,7 +1785,7 @@ export default function CanvasArea({
     try {
       const targetInfo = getActiveTargetObjectInfo(selectedObjectId);
       if (!targetInfo) return;
-      const { activeObj: sourceObj, targetId } = targetInfo;
+      const { rawObj, activeObj: sourceObj, targetId } = targetInfo;
       const activeLasso = lassoPoints && lassoPoints.length >= 3 ? lassoPoints : penLassoPoints;
       if (!activeLasso || activeLasso.length < 3) return;
 
@@ -1773,6 +1797,15 @@ export default function CanvasArea({
       });
 
       if (Object.keys(updatedObjects).length === 0) return;
+
+      if (rawObj.type === '360_container') {
+        Object.keys(updatedObjects).forEach(k => {
+          if (k !== sourceObj.id) {
+            (updatedObjects[k] as any).associatedViewId = sourceObj.id;
+            (updatedObjects[k] as any).container360Id = rawObj.id;
+          }
+        });
+      }
 
       setObjects(prev => ({
         ...prev,
@@ -6185,9 +6218,24 @@ export default function CanvasArea({
     sortedObjects.forEach((obj) => {
       try {
         const isDraftView = is360WizardActive && draft360Views.some(v => v.drawingId === obj.id);
-      if (obj.isHidden && (!isDraftView || !onionSkinEnabled360)) return;
+        if (obj.isHidden && (!isDraftView || !onionSkinEnabled360)) return;
+
+        if ((obj as any).associatedViewId) {
+          let assocContainer: VectorObject | null = null;
+          if ((obj as any).container360Id && objects[(obj as any).container360Id]) {
+            assocContainer = objects[(obj as any).container360Id];
+          } else {
+            assocContainer = Object.values(objects).find(o => o.type === '360_container' && o.views360?.some(v => v.drawingId === (obj as any).associatedViewId)) || null;
+          }
+          if (assocContainer && assocContainer.views360) {
+            const currentActiveView = findClosestView360(assocContainer.views360, assocContainer.currentAngle360 ?? 0);
+            if (currentActiveView && currentActiveView.drawingId !== (obj as any).associatedViewId) {
+              return; // Skip rendering if this part belongs to a non-active 360 view
+            }
+          }
+        }
       
-      const effLayerId = obj.layerId || (layers && layers[0] ? layers[0].id : 'layer_1');
+        const effLayerId = obj.layerId || (layers && layers[0] ? layers[0].id : 'layer_1');
       const layer = layerMap.get(effLayerId);
       if (layer && (layer.visible === false || (layer as any).isHidden || layer.opacity === 0)) return; // Skip if layer is hidden or opacity 0
 

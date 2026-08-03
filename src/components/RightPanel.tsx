@@ -282,6 +282,21 @@ export default function RightPanel({
 
     if (!result) return;
 
+    if (raw360Container) {
+      result.extractedPartObject = {
+        ...result.extractedPartObject,
+        associatedViewId: targetObject.id,
+        container360Id: raw360Container.id
+      } as any;
+      if (result.mouthCavityObject) {
+        result.mouthCavityObject = {
+          ...result.mouthCavityObject,
+          associatedViewId: targetObject.id,
+          container360Id: raw360Container.id
+        } as any;
+      }
+    }
+
     setObjects(prev => {
       const updated = { ...prev };
       updated[result.patchedOriginalObject.id] = result.patchedOriginalObject;
@@ -309,6 +324,15 @@ export default function RightPanel({
 
     if (Object.keys(updatedObjects).length === 0) return;
 
+    if (raw360Container) {
+      Object.keys(updatedObjects).forEach(k => {
+        if (k !== targetObject.id) {
+          (updatedObjects[k] as any).associatedViewId = targetObject.id;
+          (updatedObjects[k] as any).container360Id = raw360Container.id;
+        }
+      });
+    }
+
     setObjects(prev => ({
       ...prev,
       ...updatedObjects
@@ -333,10 +357,14 @@ export default function RightPanel({
 
     if (Object.keys(updatedObjects).length === 0) return;
 
-    setObjects(prev => ({
-      ...prev,
-      ...updatedObjects
-    }));
+    if (raw360Container) {
+      Object.keys(updatedObjects).forEach(k => {
+        if (k !== targetObject.id) {
+          (updatedObjects[k] as any).associatedViewId = targetObject.id;
+          (updatedObjects[k] as any).container360Id = raw360Container.id;
+        }
+      });
+    }
 
     if (eyeGroupIds.length > 0) {
       setSelectedObjectId(eyeGroupIds[0]);

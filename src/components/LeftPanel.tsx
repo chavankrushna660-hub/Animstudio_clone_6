@@ -1264,18 +1264,6 @@ export default function LeftPanel({
                                 ({itemCount})
                               </span>
                             )}
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingLayerId(layer.id);
-                                setEditingLayerName(layer.name);
-                              }}
-                              className="p-1 text-neutral-400 hover:text-amber-400 transition-colors rounded hover:bg-neutral-800 shrink-0"
-                              title="Edit Layer Name"
-                            >
-                              <Edit2 className="w-3.5 h-3.5 text-neutral-400 hover:text-amber-400" />
-                            </button>
                           </div>
                         )}
                         <div className="flex items-center gap-1.5">
@@ -1327,6 +1315,22 @@ export default function LeftPanel({
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
+
+                          {/* Edit / Rename Layer Icon (Pen Icon) positioned at the very end */}
+                          {editingLayerId !== layer.id && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingLayerId(layer.id);
+                                setEditingLayerName(layer.name);
+                              }}
+                              className="p-1 text-neutral-400 hover:text-amber-400 transition-colors rounded hover:bg-neutral-800 shrink-0"
+                              title="Edit Layer Name"
+                            >
+                              <Edit2 className="w-3.5 h-3.5 text-neutral-400 hover:text-amber-400" />
+                            </button>
+                          )}
                         </div>
                       </div>
 
