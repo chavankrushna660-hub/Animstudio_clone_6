@@ -1392,6 +1392,26 @@ export default function App() {
 
       // Route 360_container drawing/style/deform updates strictly to the currently active view object
       if (obj.type === '360_container' && obj.views360 && obj.views360.length > 0) {
+        // R3: Master position drag/move updates stage position for ALL views in the 360 container
+        if (updates.transform) {
+          obj.views360.forEach(v => {
+            if (v.drawingId && updated[v.drawingId]) {
+              updated[v.drawingId] = {
+                ...updated[v.drawingId],
+                transform: {
+                  ...updated[v.drawingId].transform,
+                  x: updates.transform!.x,
+                  y: updates.transform!.y,
+                  rotation: updates.transform!.rotation,
+                  scaleX: updates.transform!.scaleX,
+                  scaleY: updates.transform!.scaleY
+                }
+              };
+            }
+          });
+        }
+
+        // R5 & R6: Route costume/style/deform/color updates strictly to the currently ACTIVE view object ONLY
         const activeView = findClosestView360(obj.views360, obj.currentAngle360 ?? 0);
         if (activeView && updated[activeView.drawingId]) {
           const activeDrawing = updated[activeView.drawingId];
@@ -1411,9 +1431,6 @@ export default function App() {
               (drawingUpdates as any)[k] = (updates as any)[k];
             }
           });
-          if (updates.transform) {
-            drawingUpdates.transform = updates.transform;
-          }
           if (Object.keys(drawingUpdates).length > 0) {
             updated[activeView.drawingId] = { ...activeDrawing, ...drawingUpdates };
           }
@@ -1809,18 +1826,19 @@ export default function App() {
       const targetIdsToRecolor = new Set<string>([id]);
 
       if (clickedObj.type === '360_container' && clickedObj.views360) {
-        clickedObj.views360.forEach(v => {
-          if (v.drawingId) targetIdsToRecolor.add(v.drawingId);
-        });
+        const activeView = findClosestView360(clickedObj.views360, clickedObj.currentAngle360 ?? 0);
+        if (activeView && activeView.drawingId) {
+          targetIdsToRecolor.add(activeView.drawingId);
+        }
       }
 
       (Object.values(prev) as VectorObject[]).forEach(container => {
         if (container.type === '360_container' && container.views360) {
           if (container.views360.some(v => v.drawingId === id)) {
-            targetIdsToRecolor.add(container.id);
-            container.views360.forEach(v => {
-              if (v.drawingId) targetIdsToRecolor.add(v.drawingId);
-            });
+            const activeView = findClosestView360(container.views360, container.currentAngle360 ?? 0);
+            if (activeView && activeView.drawingId === id) {
+              targetIdsToRecolor.add(container.id);
+            }
           }
         }
       });
@@ -2304,6 +2322,12 @@ export default function App() {
       return;
     }
 
+    // Master position is defined by the first view (Front view) position
+    const firstObj = objects[validIds[0]];
+    const masterX = firstObj?.transform?.x ?? 300;
+    const masterY = firstObj?.transform?.y ?? 250;
+    const containerId = `360_container_${Date.now()}`;
+
     const views: View360[] = [];
     validIds.forEach((id, idx) => {
       const angle = Math.round((idx * 360) / validIds.length) % 360;
@@ -2314,19 +2338,19 @@ export default function App() {
         name: idx === 0 ? 'Front' : idx === 1 && validIds.length === 2 ? 'Back' : `Angle ${angle}°`,
         drawingName: objects[id]?.name || `Drawing ${idx + 1}`
       });
-      // Hide the individual drawings on the canvas so they only render inside the master container
-      updateObject(id, { isHidden: true });
+      // Set all views to master position and hide on canvas so they render via master container
+      if (objects[id]) {
+        updateObject(id, {
+          isHidden: true,
+          container360Id: containerId,
+          transform: {
+            ...objects[id].transform,
+            x: masterX,
+            y: masterY
+          }
+        });
+      }
     });
-    
-    const containerId = `360_container_${Date.now()}`;
-    // Find average position
-    let sumX = 0, sumY = 0;
-    validIds.forEach(id => {
-      sumX += objects[id]?.transform.x ?? 300;
-      sumY += objects[id]?.transform.y ?? 250;
-    });
-    const avgX = sumX / validIds.length;
-    const avgY = sumY / validIds.length;
     
     const new360Obj: VectorObject = {
       id: containerId,
@@ -2347,7 +2371,7 @@ export default function App() {
       strokeWidth: 2,
       fillColor: 'transparent',
       opacity: 1,
-      transform: { x: avgX, y: avgY, rotation: 0, scaleX: 1, scaleY: 1 },
+      transform: { x: masterX, y: masterY, rotation: 0, scaleX: 1, scaleY: 1 },
       pivots: [{ id: `pvt_${Date.now()}_360`, name: 'RootPivot', localX: 0, localY: 0, locked: false }],
       parentId: null,
       childrenIds: [],

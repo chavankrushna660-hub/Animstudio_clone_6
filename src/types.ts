@@ -302,6 +302,8 @@ export interface VectorObject {
   currentAngle360?: number;
   activeViewId360?: string;
   lockAngle360?: boolean;
+  container360Id?: string;
+  associatedViewId?: string;
   lassoDeformState?: LassoDeformState;
   lassoControlPoints?: LassoControlPoint[];
   originalPointsBackup?: Point[];
